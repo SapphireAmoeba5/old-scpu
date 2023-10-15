@@ -81,3 +81,38 @@ pub fn tokenize(source: String) -> Result<Vec<Token>> {
     let lexed = lex_string(&source);
     bail!("Not implemented\n'{:?}'", lexed);
 }
+
+pub struct TokenIterator<'a> {
+    tokens: &'a[&'a str],
+    current_token: usize,
+}
+
+impl<'a> TokenIterator<'a> {
+    pub fn new(tokens: &'a[&'a str]) -> Self {
+        Self {
+            tokens,
+            current_token: 0,
+        }
+    }
+
+    pub fn peek(&self) -> Option<&'a str> {
+        self.tokens.get(self.current_token).and_then(|x| Some(*x))
+    }
+
+    pub fn rewind(&mut self, n: usize) {
+        match self.current_token.checked_sub(n) {
+            Some(n) => self.current_token = n,
+            None => self.current_token = 0,
+        }
+    }
+}
+
+impl<'a> Iterator for TokenIterator<'a> {
+    type Item = &'a str;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let token = self.tokens.get(self.current_token);
+        self.current_token += 1;
+        token.and_then(|x| Some(*x))
+    }
+}
