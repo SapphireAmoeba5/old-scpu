@@ -1,3 +1,4 @@
+mod assembler;
 mod tokenizer;
 pub mod instructions;
 pub mod registers;
@@ -20,7 +21,7 @@ fn main() -> Result<()> {
     let args = Args::parse();
 
     let source = std::fs::read_to_string(&args.input_file).with_context(|| format!("Unable to open file '{}' for reading", args.input_file))?;
-
+    
     let tokens = tokenize(source)?;
 
     Ok(())
