@@ -1,10 +1,5 @@
 use anyhow::{Result, bail};
-use crate::instructions::Instruction;
 
-pub enum Token {
-    Instruction(Instruction),
-    
-}
 pub fn is_special_token(ch: char) -> bool {
     ch == '('
         || ch == ')'
@@ -75,11 +70,6 @@ pub fn lex_string<'a>(string: &'a str) -> Vec<&'a str> {
     }
 
     lexed
-}
-
-pub fn tokenize(source: String) -> Result<Vec<Token>> {
-    let lexed = lex_string(&source);
-    bail!("Not implemented\n'{:?}'", lexed);
 }
 
 pub struct TokenIterator<'a> {
