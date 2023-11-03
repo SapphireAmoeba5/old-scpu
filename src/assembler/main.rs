@@ -2,6 +2,7 @@ mod assembler;
 
 use clap::Parser;
 use anyhow::{Result, Context};
+use assembler::module::Module;
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -16,8 +17,8 @@ fn main() -> Result<()> {
     let args = Args::parse();
 
     let source = std::fs::read_to_string(&args.input_file).with_context(|| format!("Unable to open file '{}' for reading", args.input_file))?;
-    
-    //let tokens = lex_string(&source);
+   
+    let module = Module::preprocess(source)?;
 
     Ok(())
 }

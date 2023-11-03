@@ -1,4 +1,4 @@
-mod module;
+pub mod module;
 mod symbol;
 mod identifier;
 mod instructions;
@@ -6,6 +6,7 @@ mod operation;
 mod registers;
 mod opcode;
 mod lexer;
+mod number;
 
 pub struct Assembler {
     
