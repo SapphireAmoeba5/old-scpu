@@ -1,3 +1,4 @@
+#[derive(Debug, Eq, PartialEq, Copy, Clone)]
 pub enum Register {
     X0,
     X1,

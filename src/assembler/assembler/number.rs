@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub enum Width {
     Byte,
     Word,
@@ -5,7 +6,9 @@ pub enum Width {
     Qword,
 }
 
+
 // For now, the width field is irrelevent
+#[derive(Debug)]
 pub struct Number(u64, Width);
 
 
