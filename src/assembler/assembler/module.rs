@@ -7,11 +7,17 @@ use super::{
 use anyhow::{bail, Result};
 
 #[derive(Debug)]
-enum PreprocessOperation {
-    Instruction(Opcode, Vec<PreprocessOperation>),
+enum SourceCodeToken {
+    Instruction(Opcode, Vec<SourceCodeToken>),
     Identifier(Identifier),
     Constant(Number),
     Register(Register),
+    LabelDeclaration(Identifier),
+}
+
+enum GenericTwoOperandInstruction {
+    Reg64Reg64(Register, Register),
+    //Reg64Constant(Register, u64),
 }
 
 pub struct Module {
@@ -29,23 +35,27 @@ impl Module {
     pub fn preprocess(&mut self, source: String) -> Result<Self> {
         println!("Preprocessing:\n{}", source);
 
-        let mut preprocess_operations: Vec<PreprocessOperation> = vec![
-            PreprocessOperation::Instruction(
+        let mut preprocess_operations: Vec<SourceCodeToken> = vec![
+            SourceCodeToken::Instruction(
                 Opcode::Mov,
                 vec![
-                    PreprocessOperation::Register(Register::X0),
-                    PreprocessOperation::Constant(Number::from_number(10, Width::Qword)),
+                    SourceCodeToken::Register(Register::X0),
+                    SourceCodeToken::Register(Register::X0),
                 ],
             ),
-            PreprocessOperation::Instruction(Opcode::Hlt, Vec::new()),
+            SourceCodeToken::Instruction(Opcode::Hlt, Vec::new()),
         ];
 
         let mut current_byte_offset: usize = 0;
         for token in preprocess_operations {
             match token {
-                PreprocessOperation::Instruction(opcode, operands) => {
+                SourceCodeToken::Instruction(opcode, operands) => {
                     let (instruction, width) = self.process_instruction(opcode, operands)?;
                     println!("Instr: {:?}, width: {}", instruction, width);
+                }
+
+                SourceCodeToken::LabelDeclaration(id) => {
+                    self.symbols.push(Symbol::Label(id, current_byte_offset.try_into().unwrap()));
                 }
 
                 _ => {
@@ -62,7 +72,7 @@ impl Module {
     fn process_instruction(
         &self,
         opcode: Opcode,
-        operands: Vec<PreprocessOperation>,
+        operands: Vec<SourceCodeToken>,
     ) -> Result<(Instruction, usize)> {
         match opcode {
             Opcode::Hlt => self.process_hlt_instruction(operands),
@@ -72,7 +82,7 @@ impl Module {
 
     fn process_hlt_instruction(
         &self,
-        operands: Vec<PreprocessOperation>,
+        operands: Vec<SourceCodeToken>,
     ) -> Result<(Instruction, usize)> {
         if !operands.is_empty() {
             bail!(
@@ -86,22 +96,37 @@ impl Module {
 
     fn process_mov_instruction(
         &self,
-        mut operands: Vec<PreprocessOperation>,
+        operands: Vec<SourceCodeToken>,
     ) -> Result<(Instruction, usize)> {
-        if operands.len() != 2 {
-            bail!("Mov instruction expects 2 operands, but found {} operands", operands.len());
-        }
+        let instr = self.process_generic_two_operand_instruction(operands)?;
+        match instr {
+            GenericTwoOperandInstruction::Reg64Reg64(dst_reg, src_reg) => Ok((Instruction::MovReg64Reg64(dst_reg, src_reg), 100)),
         
-        let right_operand = operands.pop().unwrap();
-        let left_operand = operands.pop().unwrap();
-
-        match left_operand {
-            PreprocessOperation::Register(register) => self.subprocess_mov_instruction_reg_unknown(right_operand),
-            _ => bail!("Invalid left operand for mov instruction"),
         }
     }
 
-    fn subprocess_mov_instruction_reg_unknown(&self, right_operand: PreprocessOperation) -> Result<(Instruction, usize)> {
+    fn process_generic_two_operand_instruction(&self, mut operands: Vec<SourceCodeToken>) -> Result<GenericTwoOperandInstruction> {
+        if operands.len() != 2 {
+            bail!("Instruction expects 2 operands but found {} operands", operands.len());
+        }
+
+        let right_operand = operands.pop().unwrap();
+        let left_operand = operands.pop().unwrap();
+
+        let dest_register = match left_operand {
+            SourceCodeToken::Register(reg) => reg,
+            _ => bail!("Left operand for instruction must be a register"),
+        };
+
+        match right_operand {
+            SourceCodeToken::Register(src_register) => Ok(GenericTwoOperandInstruction::Reg64Reg64(src_register, dest_register)),
+            _ => bail!("Right operand for instruction is invalid"),
+        }
+
+
+    }
+
+    fn subprocess_mov_instruction_reg_unknown(&self, right_operand: SourceCodeToken) -> Result<(Instruction, usize)> {
         println!("Right operand: {:?}", right_operand);
         todo!()
     }

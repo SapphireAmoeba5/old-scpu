@@ -19,7 +19,7 @@ fn main() -> Result<()> {
     let source = std::fs::read_to_string(&args.input_file).with_context(|| format!("Unable to open file '{}' for reading", args.input_file))?;
    
     let mut module = Module::new();
-    module.preprocess(source);
+    module.preprocess(source)?;
 
     Ok(())
 }
