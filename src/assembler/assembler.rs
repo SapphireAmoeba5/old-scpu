@@ -7,6 +7,7 @@ mod registers;
 mod opcode;
 mod lexer;
 mod number;
+mod expression;
 
 pub struct Assembler {
     

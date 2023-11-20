@@ -2,9 +2,10 @@ use crate::assembler::number::Width;
 
 use super::{
     identifier::Identifier, instructions::Instruction, lexer::lex_string, number::Number,
-    opcode::Opcode, operation::Operation, registers::Register, symbol::Symbol,
+    opcode::Opcode, operation::Operation, registers::Register, symbol::Symbol, expression::Expression,
 };
 use anyhow::{bail, Result};
+
 
 #[derive(Debug)]
 enum SourceCodeToken {
@@ -13,11 +14,12 @@ enum SourceCodeToken {
     Constant(Number),
     Register(Register),
     LabelDeclaration(Identifier),
+    Expression(Expression),
 }
 
 enum GenericTwoOperandInstruction {
     Reg64Reg64(Register, Register),
-    //Reg64Constant(Register, u64),
+    Reg64Constant(Register, u64),
 }
 
 pub struct Module {
@@ -40,7 +42,7 @@ impl Module {
                 Opcode::Mov,
                 vec![
                     SourceCodeToken::Register(Register::X0),
-                    SourceCodeToken::Register(Register::X0),
+                    SourceCodeToken::Register(Register::X1),
                 ],
             ),
             SourceCodeToken::Instruction(Opcode::Hlt, Vec::new()),
@@ -101,6 +103,7 @@ impl Module {
         let instr = self.process_generic_two_operand_instruction(operands)?;
         match instr {
             GenericTwoOperandInstruction::Reg64Reg64(dst_reg, src_reg) => Ok((Instruction::MovReg64Reg64(dst_reg, src_reg), 100)),
+            GenericTwoOperandInstruction::Reg64Constant(dst_reg, constant) => Ok((Instruction::MovReg64Constant(dst_reg, constant), 101)), 
         
         }
     }
@@ -119,15 +122,14 @@ impl Module {
         };
 
         match right_operand {
-            SourceCodeToken::Register(src_register) => Ok(GenericTwoOperandInstruction::Reg64Reg64(src_register, dest_register)),
+            SourceCodeToken::Register(src_register) => Ok(GenericTwoOperandInstruction::Reg64Reg64(dest_register, src_register)),
+            SourceCodeToken::Expression(expression) => {
+                println!("Found expression, but don't know how to solve it");
+                todo!("FWOEN");
+            }
             _ => bail!("Right operand for instruction is invalid"),
         }
 
 
-    }
-
-    fn subprocess_mov_instruction_reg_unknown(&self, right_operand: SourceCodeToken) -> Result<(Instruction, usize)> {
-        println!("Right operand: {:?}", right_operand);
-        todo!()
     }
 }

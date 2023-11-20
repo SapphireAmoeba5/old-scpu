@@ -1,4 +1,4 @@
-use super::{registers::Register, identifier::Identifier};
+use super::{registers::Register, identifier::Identifier, module::Expression};
 
 #[derive(Debug)]
 pub enum Instruction {
