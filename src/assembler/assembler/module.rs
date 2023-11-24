@@ -124,8 +124,8 @@ impl Module {
         match right_operand {
             SourceCodeToken::Register(src_register) => Ok(GenericTwoOperandInstruction::Reg64Reg64(dest_register, src_register)),
             SourceCodeToken::Expression(expression) => {
-                println!("Found expression, but don't know how to solve it");
-                todo!("FWOEN");
+                let result = expression.solve(&self.symbols)?;
+                Ok(GenericTwoOperandInstruction::Reg64Constant(dest_register, result))
             }
             _ => bail!("Right operand for instruction is invalid"),
         }

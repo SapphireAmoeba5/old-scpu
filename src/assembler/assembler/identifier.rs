@@ -1,5 +1,10 @@
 use anyhow::{Result, bail};
 
+fn is_reserved_keyword(id: &str) -> bool {
+    !(id == "x0" || id == "x1" || id == "x2"
+      ||id == "public" || id == "const")
+}
+
 fn is_valid_id_char(ch: char) -> bool {
     if ch.is_ascii_alphanumeric() || ch.is_ascii_alphabetic() {
         return true;

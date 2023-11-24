@@ -1,4 +1,5 @@
-use super::identifier::Identifier;
+use super::{identifier::Identifier, symbol::Symbol};
+use anyhow::{Result, bail};
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum Arity {
@@ -56,4 +57,10 @@ pub enum Value {
 #[derive(Debug)]
 pub struct Expression {
 
+}
+
+impl Expression {
+    pub fn solve(self, identifiers: &[Symbol]) -> Result<u64> {
+        bail!("Invalid! {:?}", identifiers)
+    }
 }
